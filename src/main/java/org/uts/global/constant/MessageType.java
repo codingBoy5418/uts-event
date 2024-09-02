@@ -12,4 +12,7 @@ public class MessageType {
 
     //创建订单结果消息
     public static final String ADD_ORDER_RESULT_MESSAGE_TYPE = "addOrderResult";
+
+    //订单延时消息
+    public static final String ORDER_DELAY_MESSAGE_TYPE = "orderDelay";
 }

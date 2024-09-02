@@ -23,6 +23,5 @@ public class MQSender {
      */
     public void sendMessage(@RequestBody String text){
         log.info("Send Message To MQ, Msg: {}", text);
-        rabbitTemplate.convertAndSend(MqEnum.BUSINESS_EXCHANGE.getExchange(), MqEnum.BUSINESS_EXCHANGE.getRoutingKey(), text);
     }
 }

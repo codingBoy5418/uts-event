@@ -25,6 +25,8 @@ public class MQReceiver {
 
     private static final String UTS_EVENT_BUSINESS_QUEUE = "UTS_EVENT_BUSINESS_QUEUE";
 
+    private static final String UTS_DEAD_QUEUE = "UTS_DEAD_QUEUE";
+
     @Autowired
     private OrderHandler orderHandler;
 
@@ -38,6 +40,19 @@ public class MQReceiver {
         MQMessage mqMessage = JSON.parseObject(msg, MQMessage.class);
         if(MessageType.ADD_ORDER_RESULT_MESSAGE_TYPE.equals(mqMessage.getType())) {
             orderHandler.dealWithAddOrderResult(JSON.parseObject(mqMessage.getBody(), AddOrderResultMessage.class));
+        }
+    }
+
+    /**
+     * 监听死信队列，当接收到订单超时消息时，将消息发送到订单服务和秒杀服务，订单服务做更新订单状态操作，秒杀服务做回退操作
+     */
+    @RabbitListener(queues = UTS_DEAD_QUEUE)
+    public void receiveDeadQueueMessage(Message message, Channel channel) {
+        String msg = new String(message.getBody());
+        log.info("{}，接收到MQ消息，消息内容：{}", new Date().toString(), msg);
+        MQMessage mqMessage = JSON.parseObject(msg, MQMessage.class);
+        if(MessageType.ORDER_DELAY_MESSAGE_TYPE.equals(mqMessage.getType())) {
+            orderHandler.dealWithOrderDelayResult(mqMessage);
         }
     }
 }

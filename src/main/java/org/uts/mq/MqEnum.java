@@ -8,7 +8,17 @@ package org.uts.mq;
  **/
 public enum MqEnum {
 
-    BUSINESS_EXCHANGE("BUSINESS_EXCHANGE", "BUSINESS_QUEUE", "business"),
+    //事件中心业务队列
+    UTS_EVENT_BUSINESS_QUEUE("BUSINESS_EXCHANGE", "UTS_EVENT_BUSINESS_QUEUE", "uts_event_business"),
+
+    //订单队列
+    UTS_ORDER_QUEUE("BUSINESS_EXCHANGE", "UTS_ORDER_QUEUE", "uts_order"),
+
+    //秒杀队列
+    UTS_SECKILL_QUEUE("BUSINESS_EXCHANGE", "UTS_SECKILL_QUEUE", "uts_seckill"),
+
+    //一般队列，用于接收延时消息
+    UTS_GENERAL_QUEUE("BUSINESS_EXCHANGE", "UTS_GENERAL_QUEUE", "uts_general"),
 
     ;
 

@@ -2,9 +2,13 @@ package org.uts.mq.handler;
 
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.uts.WebsocketServer;
+import org.uts.mq.MqEnum;
 import org.uts.mq.message.AddOrderResultMessage;
+import org.uts.mq.message.MQMessage;
 import org.uts.utils.SnowflakeUtils;
 
 import javax.websocket.Session;
@@ -19,6 +23,9 @@ import javax.websocket.Session;
 public class OrderHandler {
 
     private final SnowflakeUtils snowflakeUtils = new SnowflakeUtils(1, 1);
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /*
      处理新增订单消息
@@ -43,5 +50,23 @@ public class OrderHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /*
+     处理订单超时消息:当接收到订单超时消息时，将消息发送到订单服务和秒杀服务，订单服务做更新订单状态操作，秒杀服务做回退操作
+     */
+    public void dealWithOrderDelayResult(MQMessage orderTimeoutMessage) {
+        //向秒杀服务发送订单超时消息
+        rabbitTemplate.convertAndSend(
+                MqEnum.UTS_SECKILL_QUEUE.getExchange(),
+                MqEnum.UTS_SECKILL_QUEUE.getRoutingKey(),
+                JSON.toJSONString(orderTimeoutMessage)
+        );
+        //向订单服务发送订单超时消息
+        rabbitTemplate.convertAndSend(
+                MqEnum.UTS_ORDER_QUEUE.getExchange(),
+                MqEnum.UTS_ORDER_QUEUE.getRoutingKey(),
+                JSON.toJSONString(orderTimeoutMessage)
+        );
     }
 }
